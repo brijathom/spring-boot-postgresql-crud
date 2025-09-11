@@ -1,0 +1,1 @@
+web: java -jar target/spring_boot_postgresql_crud-0.0.1.jar
