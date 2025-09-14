@@ -24,3 +24,21 @@ builder:
 ssh:
   user: kamal
   keys: [ "~/.ssh/backend-test" ]
+
+accessories:
+  postgres:
+    image: postgres:16
+    host: 172.205.225.21
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: productdb
+        DB_HOST: 127.0.0.1
+        DB_PORT: 5432
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data
+    files:
+      - db/production_setup.sql:/docker-entrypoint-initdb.d/setup.sql
