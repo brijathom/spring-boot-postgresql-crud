@@ -1,0 +1,25 @@
+service: kamal-test
+
+image: brijathom/kamal-test
+
+servers:
+  web:
+    - 172.205.225.21
+
+proxy:
+  ssl: false
+  host: kamal-target-test.westeurope.cloudapp.azure.com
+  app_port: 8080
+  healthcheck:
+    path: /
+
+registry:
+  username: brijathom
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+
+ssh:
+  user: kamal
