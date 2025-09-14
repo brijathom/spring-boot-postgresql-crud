@@ -3,28 +3,33 @@
 # COPY ./target/spring_boot_postgresql_crud-0.0.1.jar spring_boot_postgresql_crud.jar
 # ENTRYPOINT ["java","-Dserver.port=$PORT","-jar","/spring_boot_postgresql_crud.jar"]
 
-# Maven build container 
+# Stage 1: build the app
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
-FROM maven:3.8.5-openjdk-11 AS maven_build
+WORKDIR /app
 
-COPY pom.xml /tmp/
+# Copy pom and download dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-COPY src /tmp/src/
+# Copy source and build
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-WORKDIR /tmp/
+# Stage 2: runtime image
+FROM eclipse-temurin:21-jdk-jammy
 
-RUN mvn package
+# Optional: set a non-root user (for better security)
+# RUN useradd --create-home appuser
+# USER appuser
 
-#pull base image
+# WORKDIR /home/appuser
 
-FROM eclipse-temurin:11
+# Copy jar from build stage
+COPY --from=build /app/target/*.jar app.jar
 
-#expose port 8080
+# Expose port (default Spring Boot port)
 EXPOSE 8080
 
-#default command
-CMD java -jar /data/hello-world-0.1.0.jar
-
-#copy hello world to docker image from builder image
-
-COPY --from=maven_build /tmp/target/hello-world-0.1.0.jar /data/hello-world-0.1.0.jar
+# Define entrypoint
+ENTRYPOINT ["java","-jar","app.jar"]
