@@ -34,12 +34,12 @@
 ## Define entrypoint
 #ENTRYPOINT ["java","-jar","app.jar"]
 
-# Stage 1: build the app
+# Stage 1: Build the Spring Boot app
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-# Copy pom and download dependencies
+# Download dependencies
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
@@ -47,21 +47,23 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: runtime image
+# Stage 2: Runtime image
 FROM eclipse-temurin:21-jdk-jammy
 
-WORKDIR /app
+# Optional: non-root user
+RUN useradd --create-home appuser
+USER appuser
+WORKDIR /home/appuser
 
-# Copy jar from build stage
+# Copy built JAR
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port (Dokku sets this automatically via $PORT)
+# Expose default port
 EXPOSE 8080
 
-# Use the PORT environment variable for Spring Boot
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]
+# Use entrypoint that expands $PORT correctly
+ENTRYPOINT ["java","-Dserver.port=${PORT:-8080}","-jar","app.jar"]
 
-# Add a simple healthcheck
-# Pings localhost:$PORT every 30s, considers it unhealthy if curl fails
+# Healthcheck so Dokku knows when app is ready
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
-  CMD curl -f http://localhost:${PORT:-8080}/ || exit 1
+  CMD curl -f http://localhost:${PORT:-8080}/actuator/health || exit 1
