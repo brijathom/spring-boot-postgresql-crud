@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  app:
+
+    # Option A: use a prebuilt image from Docker Hub (fastest for teammates).
+    # Comment this out if you are using option B.
+    # image: brijathom/spring-boot-postgresql-crud:latest
+
+    # Option B: build locally (good for active development).
+    # Comment this out if you are using option A.
+    build: .
+
+    environment:
+      PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgresdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "0:8080"   # A random host port mapped to container port 8080.
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: postgresdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "0:5432"   # A Random host port mapped to container port 5432.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
