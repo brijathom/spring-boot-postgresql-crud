@@ -1,6 +1,6 @@
 # Spring Boot PostgreSQL CRUD
 
-A CRUD project for testing methods of deploying a Spring Boot application with a PosgreSQL database.Test.
+A CRUD project for testing methods of deploying a Spring Boot application with a PosgreSQL database.
 
 You can test the REST API using Postman:
 
